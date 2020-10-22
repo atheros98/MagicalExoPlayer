@@ -22,6 +22,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatImageButton;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.PlaybackParameters;
@@ -37,6 +38,7 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
+import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
@@ -48,6 +50,7 @@ import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 import com.potyvideo.library.globalEnums.EnumAspectRatio;
 import com.potyvideo.library.globalEnums.EnumLoop;
 import com.potyvideo.library.globalEnums.EnumResizeMode;
@@ -321,68 +324,38 @@ public class AndExoPlayerView extends LinearLayout implements View.OnClickListen
         }
 
         this.currSource = source;
-
         boolean validUrl = URLUtil.isValidUrl(source);
-
         Uri uri = Uri.parse(source);
-        if (uri == null || uri.getLastPathSegment() == null) {
-            Toast.makeText(context, "Uri Converter Failed, Input Is Invalid.", Toast.LENGTH_SHORT).show();
-            return null;
-        }
-
-        if (validUrl && (uri.getLastPathSegment().toLowerCase().contains(PublicValues.KEY_MP4) || uri.getLastPathSegment().toLowerCase().contains(PublicValues.KEY_MKV))) {
-
-            DefaultHttpDataSourceFactory sourceFactory = new DefaultHttpDataSourceFactory(PublicValues.KEY_USER_AGENT);
-            if (extraHeaders != null) {
-                for (Map.Entry<String, String> entry : extraHeaders.entrySet())
-                    sourceFactory.getDefaultRequestProperties().set(entry.getKey(), entry.getValue());
+        int URItype = Util.inferContentType(uri);
+        if (validUrl) {
+            DefaultHttpDataSourceFactory httpDataSourceFactory = new DefaultHttpDataSourceFactory(PublicValues.KEY_USER_AGENT);
+            switch (URItype) {
+                case C.TYPE_DASH:
+                    return new DashMediaSource.Factory(httpDataSourceFactory).createMediaSource(uri);
+                case C.TYPE_SS:
+                    return new SsMediaSource.Factory(httpDataSourceFactory).createMediaSource(uri);
+                case C.TYPE_HLS:
+                    return new HlsMediaSource.Factory(httpDataSourceFactory).createMediaSource(uri);
+                case C.TYPE_OTHER:
+                    return new ProgressiveMediaSource.Factory(httpDataSourceFactory).createMediaSource(uri);
+                default:
+                    return null;
             }
-
-            return new ProgressiveMediaSource.Factory(sourceFactory)
-                    .createMediaSource(uri);
-
-        } else if (!validUrl && (uri.getLastPathSegment().toLowerCase().contains(PublicValues.KEY_MP4)) || uri.getLastPathSegment().toLowerCase().contains(PublicValues.KEY_MKV)) {
-            return new ProgressiveMediaSource.Factory(new DefaultDataSourceFactory(context, PublicValues.KEY_USER_AGENT))
-                    .createMediaSource(uri);
-
-        } else if (uri.getLastPathSegment().toLowerCase().contains(PublicValues.KEY_HLS)) {
-            DefaultHttpDataSourceFactory sourceFactory = new DefaultHttpDataSourceFactory(PublicValues.KEY_USER_AGENT);
-            if (extraHeaders != null) {
-                for (Map.Entry<String, String> entry : extraHeaders.entrySet())
-                    sourceFactory.getDefaultRequestProperties().set(entry.getKey(), entry.getValue());
-            }
-
-            return new HlsMediaSource.Factory(sourceFactory)
-                    .createMediaSource(uri);
-
-        } else if (uri.getLastPathSegment().toLowerCase().contains(PublicValues.KEY_MP3)){
-
-            DefaultHttpDataSourceFactory sourceFactory = new DefaultHttpDataSourceFactory(PublicValues.KEY_USER_AGENT);
-            if (extraHeaders != null) {
-                for (Map.Entry<String, String> entry : extraHeaders.entrySet())
-                    sourceFactory.getDefaultRequestProperties().set(entry.getKey(), entry.getValue());
-            }
-
-            return new ProgressiveMediaSource.Factory(sourceFactory)
-                    .createMediaSource(uri);
-
-        } else if (uri.getLastPathSegment().toLowerCase().contains(PublicValues.KEY_OGG)){
-
-            DefaultHttpDataSourceFactory sourceFactory = new DefaultHttpDataSourceFactory(PublicValues.KEY_USER_AGENT);
-            if (extraHeaders != null) {
-                for (Map.Entry<String, String> entry : extraHeaders.entrySet())
-                    sourceFactory.getDefaultRequestProperties().set(entry.getKey(), entry.getValue());
-            }
-
-            return new ProgressiveMediaSource.Factory(sourceFactory, OggExtractor.FACTORY)
-                    .createMediaSource(uri);
 
         } else {
-            DefaultDashChunkSource.Factory dashChunkSourceFactory = new DefaultDashChunkSource.Factory(new DefaultHttpDataSourceFactory("ua", new DefaultBandwidthMeter()));
-            DefaultHttpDataSourceFactory manifestDataSourceFactory = new DefaultHttpDataSourceFactory(PublicValues.KEY_USER_AGENT);
-            return new DashMediaSource.Factory(dashChunkSourceFactory, manifestDataSourceFactory)
-                    .createMediaSource(uri);
-
+            DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(context, PublicValues.KEY_USER_AGENT);
+            switch (URItype) {
+                case C.TYPE_DASH:
+                    return new DashMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
+                case C.TYPE_SS:
+                    return new SsMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
+                case C.TYPE_HLS:
+                    return new HlsMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
+                case C.TYPE_OTHER:
+                    return new ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
+                default:
+                    return null;
+            }
         }
     }
 
