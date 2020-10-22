@@ -330,7 +330,7 @@ public class AndExoPlayerView extends LinearLayout implements View.OnClickListen
             return null;
         }
 
-        if (validUrl && (uri.getLastPathSegment().contains(PublicValues.KEY_MP4) || uri.getLastPathSegment().contains(PublicValues.KEY_MP4_CAPS))) {
+        if (validUrl && (uri.getLastPathSegment().toLowerCase().contains(PublicValues.KEY_MP4) || uri.getLastPathSegment().toLowerCase().contains(PublicValues.KEY_MKV))) {
 
             DefaultHttpDataSourceFactory sourceFactory = new DefaultHttpDataSourceFactory(PublicValues.KEY_USER_AGENT);
             if (extraHeaders != null) {
@@ -341,11 +341,11 @@ public class AndExoPlayerView extends LinearLayout implements View.OnClickListen
             return new ProgressiveMediaSource.Factory(sourceFactory)
                     .createMediaSource(uri);
 
-        } else if (!validUrl && (uri.getLastPathSegment().contains(PublicValues.KEY_MP4)) || uri.getLastPathSegment().contains(PublicValues.KEY_MP4_CAPS)) {
+        } else if (!validUrl && (uri.getLastPathSegment().toLowerCase().contains(PublicValues.KEY_MP4)) || uri.getLastPathSegment().toLowerCase().contains(PublicValues.KEY_MKV)) {
             return new ProgressiveMediaSource.Factory(new DefaultDataSourceFactory(context, PublicValues.KEY_USER_AGENT))
                     .createMediaSource(uri);
 
-        } else if (uri.getLastPathSegment().contains(PublicValues.KEY_HLS)) {
+        } else if (uri.getLastPathSegment().toLowerCase().contains(PublicValues.KEY_HLS)) {
             DefaultHttpDataSourceFactory sourceFactory = new DefaultHttpDataSourceFactory(PublicValues.KEY_USER_AGENT);
             if (extraHeaders != null) {
                 for (Map.Entry<String, String> entry : extraHeaders.entrySet())
@@ -355,7 +355,7 @@ public class AndExoPlayerView extends LinearLayout implements View.OnClickListen
             return new HlsMediaSource.Factory(sourceFactory)
                     .createMediaSource(uri);
 
-        } else if (uri.getLastPathSegment().contains(PublicValues.KEY_MP3)){
+        } else if (uri.getLastPathSegment().toLowerCase().contains(PublicValues.KEY_MP3)){
 
             DefaultHttpDataSourceFactory sourceFactory = new DefaultHttpDataSourceFactory(PublicValues.KEY_USER_AGENT);
             if (extraHeaders != null) {
@@ -366,7 +366,7 @@ public class AndExoPlayerView extends LinearLayout implements View.OnClickListen
             return new ProgressiveMediaSource.Factory(sourceFactory)
                     .createMediaSource(uri);
 
-        } else if (uri.getLastPathSegment().contains(PublicValues.KEY_OGG)){
+        } else if (uri.getLastPathSegment().toLowerCase().contains(PublicValues.KEY_OGG)){
 
             DefaultHttpDataSourceFactory sourceFactory = new DefaultHttpDataSourceFactory(PublicValues.KEY_USER_AGENT);
             if (extraHeaders != null) {
