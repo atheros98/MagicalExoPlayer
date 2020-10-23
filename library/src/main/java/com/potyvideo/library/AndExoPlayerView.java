@@ -329,6 +329,10 @@ public class AndExoPlayerView extends LinearLayout implements View.OnClickListen
         int URItype = Util.inferContentType(uri);
         if (validUrl) {
             DefaultHttpDataSourceFactory httpDataSourceFactory = new DefaultHttpDataSourceFactory(PublicValues.KEY_USER_AGENT);
+            if (extraHeaders != null) {
+                for (Map.Entry<String, String> entry : extraHeaders.entrySet())
+                    httpDataSourceFactory.getDefaultRequestProperties().set(entry.getKey(), entry.getValue());
+            }
             switch (URItype) {
                 case C.TYPE_DASH:
                     return new DashMediaSource.Factory(httpDataSourceFactory).createMediaSource(uri);
