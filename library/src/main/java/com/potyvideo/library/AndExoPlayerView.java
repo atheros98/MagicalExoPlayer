@@ -322,13 +322,14 @@ public class AndExoPlayerView extends LinearLayout implements View.OnClickListen
             Toast.makeText(context, "Input Is Invalid.", Toast.LENGTH_SHORT).show();
             return null;
         }
+        String user_agent = extraHeaders.get("User-Agent") != null ? extraHeaders.remove("User-Agent") : PublicValues.KEY_USER_AGENT;
 
         this.currSource = source;
         boolean validUrl = URLUtil.isValidUrl(source);
         Uri uri = Uri.parse(source);
         int URItype = Util.inferContentType(uri);
         if (validUrl) {
-            DefaultHttpDataSourceFactory httpDataSourceFactory = new DefaultHttpDataSourceFactory(PublicValues.KEY_USER_AGENT);
+            DefaultHttpDataSourceFactory httpDataSourceFactory = new DefaultHttpDataSourceFactory(user_agent);
             if (extraHeaders != null) {
                 for (Map.Entry<String, String> entry : extraHeaders.entrySet())
                     httpDataSourceFactory.getDefaultRequestProperties().set(entry.getKey(), entry.getValue());
@@ -347,7 +348,7 @@ public class AndExoPlayerView extends LinearLayout implements View.OnClickListen
             }
 
         } else {
-            DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(context, PublicValues.KEY_USER_AGENT);
+            DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(context, user_agent);
             switch (URItype) {
                 case C.TYPE_DASH:
                     return new DashMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
