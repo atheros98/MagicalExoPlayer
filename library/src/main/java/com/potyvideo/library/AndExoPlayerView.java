@@ -322,7 +322,7 @@ public class AndExoPlayerView extends LinearLayout implements View.OnClickListen
             Toast.makeText(context, "Input Is Invalid.", Toast.LENGTH_SHORT).show();
             return null;
         }
-        String user_agent = extraHeaders.get("User-Agent") != null ? extraHeaders.remove("User-Agent") : PublicValues.KEY_USER_AGENT;
+        String user_agent = (extraHeaders != null && extraHeaders.get("User-Agent") != null) ? extraHeaders.remove("User-Agent") : PublicValues.KEY_USER_AGENT;
 
         this.currSource = source;
         boolean validUrl = URLUtil.isValidUrl(source);
